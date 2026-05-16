@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Logistik & Dashboard HTN</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary-dark: #2c3e6b;
+            --bg-light: #f3f6f9;
+            --text-main: #333333;
+            --text-muted: #666666;
+            
+            /* Card Colors */
+            --blue-card: #e3f2fd;
+            --blue-text: #0d47a1;
+            --green-card: #e8f5e9;
+            --green-text: #1b5e20;
+            --orange-card: #fff3e0;
+            --orange-text: #e65100;
+            --coral-card: #fbe9e7;
+            --coral-text: #d84315;
+            
+            /* Status Colors */
+            --status-aman: #2ecc71;
+            --status-waspada: #f1c40f;
+            --status-kritis: #e74c3c;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+        }
+
+        /* HEADER STYLING */
+        .app-header {
+            grid-column: 1 / -1;
+            background: var(--primary-dark);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header-icon {
+            font-size: 40px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            line-height: 1;
+        }
+
+        .app-header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+        .app-header p { margin: 5px 0 0; font-size: 14px; color: #cbd5e1; }
+
+        /* CARD BASICS */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #eef2f5;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* FORM INPUT STYLING */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 16px;
+            color: #a0aec0;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 11px 12px 11px 38px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: #2b9a8f;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover { background: #20766d; }
+
+        /* METRIC CARDS GRID */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
+
+        .metric-card {
+            padding: 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .metric-icon {
+            font-size: 28px;
+            opacity: 0.8;
+        }
+
+        .metric-info p { margin: 0; font-size: 12px; font-weight: 500; }
+        .metric-info h3 { margin: 4px 0 0; font-size: 20px; font-weight: 700; }
+
+        .m-amlo5 { background: var(--blue-card); color: var(--blue-text); }
+        .m-amlo10 { background: var(--green-card); color: var(--green-text); }
+        .m-lisi { background: var(--orange-card); color: var(--orange-text); }
+        .m-hctz { background: var(--coral-card); color: var(--coral-text); }
+
+        /* TABLE STYLING */
+        .table-responsive { overflow-x: auto; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #4a5568;
+            padding: 14px 16px;
+            font-weight: 600;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf2f7;
+            color: #2d3748;
+        }
+
+        tr:hover td { background-color: #fdfdfd; }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .b-aman { background: #e8f5e9; color: #2e7d32; }
+        .b-waspada { background: #fffde7; color: #f57f17; }
+        .b-kritis { background: #ffebee; color: #c62828; }
+        .b-empty { background: #f1f5f9; color: #64748b; }
+        
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .d-aman { background: var(--status-aman); }
+        .d-waspada { background: var(--status-waspada); }
+        .d-kritis { background: var(--status-kritis); }
+        .d-empty { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="app-header">
+        <div class="header-icon">📋</div>
+        <div>
+            <h1>Aplikasi Logistik & Dashboard HTN</h1>
+            <p>Sistem Pengawasan dan Estimasi Kebutuhan Distribusi Obat Farmasi</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📥 Input Data Faskes</h2>
+        <form id="logistikForm" onsubmit="prosesDashboard(event)">
+            <div class="form-group">
+                <label for="faskesSelect">Pilih Fasilitas Kesehatan</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🏢</span>
+                    <select id="faskesSelect" required>
+                        <option value="" disabled selected>Pilih Faskes...</option>
+                        <option value="Puskesmas Sukamaju">Puskesmas Sukamaju</option>
+                        <option value="Puskesmas Melati">Puskesmas Melati</option>
+                        <option value="Pustu Bakti Husada">Pustu Bakti Husada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pasienInput">Total Pasien HTN Aktif</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👥</span>
+                    <input type="number" id="pasienInput" placeholder="Masukkan jumlah pasien" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Sisa Stok Gudang (Tablet)</label>
+                <div class="input-wrapper" style="margin-bottom: 10px;">
+                    <span class="input-icon">💊</span>
+                    <input type="number" id="stokA5" placeholder="Amlodipine 5mg" min="0" required>
+                </div>
+                <div class="input-wrapper" style="margin-bottom: 10px;">
+                    <span class="input-icon">💊</span>
+                    <input type="number" id="stokA10" placeholder="Amlodipine 10mg" min="0" required>
+                </div>
+                <div class="input-wrapper" style="margin-bottom: 10px;">
+                    <span class="input-icon">💊</span>
+                    <input type="number" id="stokL10" placeholder="Lisinopril 10mg" min="0" required>
+                </div>
+                <div class="input-wrapper">
+                    <span class="input-icon">💊</span>
+                    <input type="number" id="stokH25" placeholder="HCTZ 25mg" min="0" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Update Data & Proyeksi</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📊 Dashboard Analisis & Proyeksi</h2>
+        <p id="subtitelDashboard" style="color: var(--text-muted); font-size: 14px; margin-top: -10px; margin-bottom: 20px;">Silakan isi form di sebelah kiri untuk memproses grafik kecukupan logistik.</p>
+
+        <div class="metrics-grid">
+            <div class="metric-card m-amlo5">
+                <div class="metric-icon">📦</div>
+                <div class="metric-info">
+                    <p>Amlodipine 5mg (Ideal)</p>
+                    <h3 id="mAmlo5">0 Tab</h3>
+                </div>
+            </div>
+            <div class="metric-card m-amlo10">
+                <div class="metric-icon">📦</div>
+                <div class="metric-info">
+                    <p>Amlodipine 10mg (Ideal)</p>
+                    <h3 id="mAmlo10">0 Tab</h3>
+                </div>
+            </div>
+            <div class="metric-card m-lisi">
+                <div class="metric-icon">📦</div>
+                <div class="metric-info">
+                    <p>Lisinopril 10mg (Ideal)</p>
+                    <h3 id="mLisi">0 Tab</h3>
+                </div>
+            </div>
+            <div class="metric-card m-hctz">
+                <div class="metric-icon">📦</div>
+                <div class="metric-info">
+                    <p>HCTZ 25mg (Ideal)</p>
+                    <h3 id="mHctz">0 Tab</h3>
+                </div>
+            </div>
+        </div>
+
+        <h2>🚦 Status Hari & Kecukupan Ketersediaan</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Obat</th>
+                        <th>Stok Fisik</th>
+                        <th>Target (3 Bulan)</th>
+                        <th>Status Hari (Indikator)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Amlodipine 5 mg</b></td>
+                        <td id="tStokA5">0</td>
+                        <td id="tIdealA5">0 Tab</td>
+                        <td><div id="badgeA5" class="status-badge b-empty"><span class="dot d-empty"></span>Belum ada data</div></td>
+                    </tr>
+                    <tr>
+                        <td><b>Amlodipine 10 mg</b></td>
+                        <td id="tStokA10">0</td>
+                        <td id="tIdealA10">0 Tab</td>
+                        <td><div id="badgeA10" class="status-badge b-empty"><span class="dot d-empty"></span>Belum ada data</div></td>
+                    </tr>
+                    <tr>
+                        <td><b>Lisinopril 10 mg</b></td>
+                        <td id="tStokL10">0</td>
+                        <td id="tIdealL10">0 Tab</td>
+                        <td><div id="badgeL10" class="status-badge b-empty"><span class="dot d-empty"></span>Belum ada data</div></td>
+                    </tr>
+                    <tr>
+                        <td><b>HCTZ 25 mg</b></td>
+                        <td id="tStokH25">0</td>
+                        <td id="tIdealH25">0 Tab</td>
+                        <td><div id="badgeH25" class="status-badge b-empty"><span class="dot d-empty"></span>Belum ada data</div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function prosesDashboard(e) {
+    e.preventDefault();
+
+    // Mengambil nilai input dari form
+    const faskes = document.getElementById('faskesSelect').value;
+    const pasien = parseInt(document.getElementById('pasienInput').value) || 0;
+    const sA5 = parseInt(document.getElementById('stokA5').value) || 0;
+    const sA10 = parseInt(document.getElementById('stokA10').value) || 0;
+    const sL10 = parseInt(document.getElementById('stokL10').value) || 0;
+    const sH25 = parseInt(document.getElementById('stokH25').value) || 0;
+
+    // Perhitungan Target Ideal 3 Bulan (Menggunakan rasio aman data Ready Reckoner)
+    // Proteksi otomatis: jika pasien 0, target otomatis 0 (Aman dari error pembagian nol!)
+    const idealA5 = pasien * 36;
+    const idealA10 = pasien * 54;
+    const idealL10 = pasien * 36;
+    const idealH25 = pasien * 6;
+
+    // Ubah text informasi subjudul
+    document.getElementById('subtitelDashboard').innerHTML = `Menampilkan analisis logistik untuk <b>${faskes}</b> dengan beban <b>${pasien} pasien terdaftar</b>.`;
+
+    // Update Top Summary Cards
+    document.getElementById('mAmlo5').innerText = idealA5.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mAmlo10').innerText = idealA10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mLisi').innerText = idealL10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mHctz').innerText = idealH25.toLocaleString('id-ID') + " Tab";
+
+    // Update Angka Di Dalam Tabel
+    document.getElementById('tStokA5').innerText = sA5.toLocaleString('id-ID');
+    document.getElementById('tStokA10').innerText = sA10.toLocaleString('id-ID');
+    document.getElementById('tStokL10').innerText = sL10.toLocaleString('id-ID');
+    document.getElementById('tStokH25').innerText = sH25.toLocaleString('id-ID');
+
+    document.getElementById('tIdealA5').innerText = idealA5.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealA10').innerText = idealA10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealL10').innerText = idealL10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealH25').innerText = idealH25.toLocaleString('id-ID') + " Tab";
+
+    // Update Badge Warna Status Hari Pakai Obat
+    hitungStatusHari('badgeA5', sA5, idealA5);
+    hitungStatusHari('badgeA10', sA10, idealA10);
+    hitungStatusHari('badgeL10', sL10, idealL10);
+    hitungStatusHari('badgeH25', sH25, idealH25);
+}
+
+function hitungStatusHari(idElemen, stokFisik, targetIdeal) {
+    const badge = document.getElementById(idElemen);
+    
+    // Proteksi penanganan nilai 0 agar tidak terjadi crash matematika/pembagian nol
+    if (targetIdeal === 0) {
+        badge.className = "status-badge b-empty";
+        badge.innerHTML = `<span class="dot d-empty"></span>Tidak ada beban pasien`;
+        return;
+    }
+
+    // Estimasi sisa hari pakai (Target ideal diasumsikan mencukupi kebutuhan untuk 90 hari)
+    const sisaHari = (stokFisik / (targetIdeal / 90));
+
+    if (sisaHari < 30) {
+        badge.className = "status-badge b-kritis";
+        badge.innerHTML = `<span class="dot d-kritis"></span>KRITIS (<30 Hari)`;
+    } else if (sisaHari >= 30 && sisaHari <= 90) {
+        badge.className = "status-badge b-waspada";
+        badge.innerHTML = `<span class="dot d-waspada"></span>WASPADA (${Math.round(sisaHari)} Hari)`;
+    } else {
+        badge.className = "status-badge b-aman";
+        badge.innerHTML = `<span class="dot d-aman"></span>AMAN (${Math.round(sisaHari)} Hari)`;
+    }
+}
+</script>
+
+</body>
+</html>
