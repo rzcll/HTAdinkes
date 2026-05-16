@@ -437,7 +437,104 @@ function hitungStatusHari(idElemen, stokFisik, targetIdeal) {
         badge.innerHTML = `<span class="dot d-aman"></span>AMAN (${Math.round(sisaHari)} Hari)`;
     }
 }
-</script>
+<script>
+// PENTING: Ganti tulisan di bawah ini dengan URL Web App yang baru saja Anda salin dari Google Apps Script!
+const scriptURL = 'https://script.google.com/macros/s/AKfycbwYr6mTLOUbzWpyuNIu6fXZbs5qlZKqfGJSnQxRK5iz5HNWwthSr5r9FkLhLaf10qr5ug/exec';
 
-</body>
-</html>
+function prosesDashboard(e) {
+    e.preventDefault();
+
+    // 1. Mengambil Nilai Input dari Form
+    const faskes = document.getElementById('faskesSelect').value;
+    const pasien = parseInt(document.getElementById('pasienInput').value) || 0;
+    const sA5 = parseInt(document.getElementById('stokA5').value) || 0;
+    const sA10 = parseInt(document.getElementById('stokA10').value) || 0;
+    const sL10 = parseInt(document.getElementById('stokL10').value) || 0;
+    const sH25 = parseInt(document.getElementById('stokH25').value) || 0;
+
+    // Menyiapkan Paket Data untuk Dikirim ke Spreadsheet
+    const formData = new FormData();
+    formData.append('faskes', faskes);
+    formData.append('pasien', pasien);
+    formData.append('amlo5', sA5);
+    formData.append('amlo10', sA10);
+    formData.append('lisi', sL10);
+    formData.append('hctz', sH25);
+
+    // Ubah status tombol saat memproses pengiriman data
+    const btn = document.querySelector('.btn-submit');
+    const teksAsli = btn.innerText;
+    btn.innerText = "⏳ Menyimpan ke Spreadsheet...";
+    btn.disabled = true;
+
+    // 2. Mengirim Data ke Google Apps Script (Background Process)
+    fetch(scriptURL, { method: 'POST', body: formData })
+        .then(response => {
+            // Jika Sukses Masuk Excel, Lakukan Update Dashboard di Layar
+            alert('Terkirim! Data berhasil masuk ke Google Spreadsheet.');
+            updateTampilanDashboard(faskes, pasien, sA5, sA10, sL10, sH25);
+            
+            // Kembalikan tombol seperti semula
+            btn.innerText = teksAsli;
+            btn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error!', error.message);
+            alert('Gagal menyimpan data ke Spreadsheet. Periksa koneksi internet Anda.');
+            btn.innerText = teksAsli;
+            btn.disabled = false;
+        });
+}
+
+function updateTampilanDashboard(faskes, pasien, sA5, sA10, sL10, sH25) {
+    // Perhitungan Target Ideal 3 Bulan
+    const idealA5 = pasien * 36;
+    const idealA10 = pasien * 54;
+    const idealL10 = pasien * 36;
+    const idealH25 = pasien * 6;
+
+    // Update Top Summary Cards
+    document.getElementById('subtitelDashboard').innerHTML = `Menampilkan analisis logistik untuk <b>${faskes}</b> dengan beban <b>${pasien} pasien terdaftar</b>.`;
+    document.getElementById('mAmlo5').innerText = idealA5.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mAmlo10').innerText = idealA10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mLisi').innerText = idealL10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('mHctz').innerText = idealH25.toLocaleString('id-ID') + " Tab";
+
+    // Update Tabel Fisik & Status Hari
+    document.getElementById('tStokA5').innerText = sA5.toLocaleString('id-ID');
+    document.getElementById('tStokA10').innerText = sA10.toLocaleString('id-ID');
+    document.getElementById('tStokL10').innerText = sL10.toLocaleString('id-ID');
+    document.getElementById('tStokH25').innerText = sH25.toLocaleString('id-ID');
+
+    document.getElementById('tIdealA5').innerText = idealA5.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealA10').innerText = idealA10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealL10').innerText = idealL10.toLocaleString('id-ID') + " Tab";
+    document.getElementById('tIdealH25').innerText = idealH25.toLocaleString('id-ID') + " Tab";
+
+    hitungStatusHari('badgeA5', sA5, idealA5);
+    hitungStatusHari('badgeA10', sA10, idealA10);
+    hitungStatusHari('badgeL10', sL10, idealL10);
+    hitungStatusHari('badgeH25', sH25, idealH25);
+}
+
+function hitungStatusHari(idElemen, stokFisik, targetIdeal) {
+    const badge = document.getElementById(idElemen);
+    if (targetIdeal === 0) {
+        badge.className = "status-badge b-empty";
+        badge.innerHTML = `<span class="dot d-empty"></span>Tidak ada beban pasien`;
+        return;
+    }
+
+    const sisaHari = (stokFisik / (targetIdeal / 90));
+    if (sisaHari < 30) {
+        badge.className = "status-badge b-kritis";
+        badge.innerHTML = `<span class="dot d-kritis"></span>KRITIS (<30 Hari)`;
+    } else if (sisaHari >= 30 && sisaHari <= 90) {
+        badge.className = "status-badge b-waspada";
+        badge.innerHTML = `<span class="dot d-waspada"></span>WASPADA (${Math.round(sisaHari)} Hari)`;
+    } else {
+        badge.className = "status-badge b-aman";
+        badge.innerHTML = `<span class="dot d-aman"></span>AMAN (${Math.round(sisaHari)} Hari)`;
+    }
+}
+</script>
